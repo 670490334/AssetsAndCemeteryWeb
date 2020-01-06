@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<!-- 
+增值业务----代扫墓
+LF
+ -->
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>订单详情</title>
+    <meta name="description" content=""/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"  name="viewport" />
+    <script src="./cdn/axios/1.0.0/axios.min.js"></script>
+    <script src="./cdn/js.cookie.min.js"></script>
+    <link rel="stylesheet" href="./css/iconfont/iconfont.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.0/lib/index.css">
+	<link rel="stylesheet" href="./css/weiui/weui.css"/>
+    <link rel="stylesheet" href="./css/weiui/example.css"/>
+	<link rel="stylesheet" href="./css/iconfont/iconfont.css">
+    <link rel="stylesheet" href="./css/weiui/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.0/lib/vant.min.js"></script>
+    <script src="./cdn/jquery/2.0.0/jquery.min.js"></script>
+	<script src="./cdn/url_ip.js"></script>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+    </head>
+
+<body>
+<div id="app">
+	  <div class="goods">
+		<div class="weui-loadmore" v-if="this.loadStatus==0">
+            <i class="weui-loading"></i>
+            <span class="weui-loadmore__tips">正在加载</span>
+        </div>
+    <van-cell-group>
+      <!--<van-cell>
+        <div class="goods-title">{{ goods.title }}</div>
+        <div class="goods-price">{{ formatPrice(goods.price) }}</div>
+      </van-cell>-->
+      <van-cell class="goods-express">
+        <van-col span="10" >费用类型： {{goods.costType}}</van-col>
+      </van-cell>
+	  <van-cell class="goods-express">
+        <van-col span="10" >费用说明： {{goods.costexplain}}</van-col>
+       
+      </van-cell>
+	  <van-cell class="goods-express">
+        <van-col span="10">墓穴： {{goods.gravenumName}}</van-col>
+        
+      </van-cell>
+	  <van-cell class="goods-express">
+			<van-col span="10">支付状态：
+			<van-tag plain type="danger" v-if="goods.payStatus == 0">未支付</van-tag>
+			<van-tag plain type="primary" v-if="goods.payStatus == 1">已支付</van-tag>
+			</van-col>
+      </van-cell>
+	  <van-cell class="goods-express">
+        <van-col span="10">未付金额： {{goods.notApplyAccount}}</van-col>
+        
+      </van-cell>
+	  <van-cell class="goods-express">
+        <van-col span="10">应付金额： {{goods.applyaccount}}</van-col>
+        
+      </van-cell>
+    </van-cell-group>
+	<van-goods-action v-if="goods.payStatus=='0'">
+	 <van-goods-action-button type="warning" @click="del()">
+        删除订单
+      </van-goods-action-button>
+<van-goods-action-button type="danger" @click="pay()">
+        立即支付
+      </van-goods-action-button>
+	  </van-goods-action>
+    <!--<van-cell-group class="goods-cell-group">
+      <van-cell value="进入店铺" icon="shop-o" is-link @click="sorry">
+        <template slot="title">
+          <span class="van-cell-text">有赞的店</span>
+          <van-tag class="goods-tag" type="danger">官方</van-tag>
+        </template>
+      </van-cell>
+      <van-cell title="线下门店" icon="location-o" is-link @click="sorry" />
+    </van-cell-group>
+
+    <van-cell-group class="goods-cell-group">
+      <van-cell title="查看商品详情" is-link @click="sorry" />
+    </van-cell-group>
+
+    <van-goods-action>
+      <van-goods-action-icon icon="chat-o" @click="sorry">
+        客服
+      </van-goods-action-icon>
+      <van-goods-action-icon icon="cart-o" @click="onClickCart">
+        购物车
+      </van-goods-action-icon>
+      <van-goods-action-button type="warning" @click="sorry">
+        加入购物车
+      </van-goods-action-button>
+      <van-goods-action-button type="danger" @click="sorry">
+        立即购买
+      </van-goods-action-button>
+    </van-goods-action>-->
+  </div>
+		
+	
+</div>
+
+</body>
+<!--<script>
+        var ua = navigator.userAgent.toLowerCase();
+        var isWeixin = ua.indexOf('micromessenger') != -1;
+        if (!isWeixin) {
+            window.location.href = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=888"
+        }
+</script>-->
+
+<script>
+  var Vue = window.Vue;
+  var vant = window.vant;
+  var axios = window.axios;
+
+
+  // 注册组件
+  Vue.use(vant);
+  new Vue({
+    el: '#app',
+    data(){
+      return {
+		  loadStatus:0,
+		  id:'',
+          openId:'',
+		  mobile:'',
+		  customerNo:'',
+		  captcha:'',
+		  textval:1,
+		  timer:null,
+		  count :60,
+		  content:'',
+		  constractNum:'',
+		  goods: {
+			
+		}
+      }
+    },
+    watch: {
+      
+    },
+    methods: {
+		pay(){
+				//转换成分
+                var amount = this.goods.notApplyAmount;
+                //转码encodeURIComponent两次转码
+                var goodsName = encodeURIComponent(encodeURIComponent('其他费用'));
+                var billId = encodeURIComponent(encodeURIComponent(this.id));
+                //测试所以url上的amount写的死数据，每次给500开发测试也太贵了吧哈哈
+                window.location.href = "http://betimes.free.idcfengye.com/blade-pay/goods/buy?amount=1" + "&goodsName=" + goodsName + "&billId=" + billId;
+		},
+		getOtherServiceById(){
+				var id = this.id;
+				var _self = this;
+				//var data = {'id':id};
+				axios.get('http://betimes.free.idcfengye.com/blade-cemetery/cemetery/getOtherServiceById?id='+id
+					).then(function(response) {
+					if(response.data.code!=200){
+						alert('获取账单失败')
+						_self.loadStatus=1;
+						return;
+					}else{
+						_self.goods = response.data.data;
+						_self.loadStatus=1;
+					}
+					 
+				});
+		},
+		formatPrice() {
+		  return '¥' + (this.goods.price / 100).toFixed(2);
+		},
+		onClickCart() {
+		  this.$router.push('cart');
+		},
+		sorry() {
+		  Toast('暂无后续逻辑~');
+		},
+		//获取url的参数
+		getUrlParms(para) {
+			var search = location.search; //页面URL的查询部分字符串
+			var arrPara = new Array(); //参数数组。数组单项为包含参数名和参数值的字符串，如“para=value”
+			var arrVal = new Array(); //参数值数组。用于存储查找到的参数值
+
+			if (search != "") {
+				var index = 0;
+				search = search.substr(1); //去除开头的“?”
+				arrPara = search.split("&");
+
+				for (i in arrPara) {
+					var paraPre = para + "="; //参数前缀。即参数名+“=”，如“para=”
+					if (arrPara[i].indexOf(paraPre) == 0 && paraPre.length < arrPara[i].length) {
+						arrVal[index] = decodeURI(arrPara[i].substr(paraPre.length)); //顺带URI解码避免出现乱码
+						index++;
+					}
+				}
+			}
+
+			if (arrVal.length == 1) {
+				return arrVal[0];
+			} else if (arrVal.length == 0) {
+				return null;
+			} else {
+				return arrVal;
+			}
+		},
+		getOpenId(url){
+			//先看url上面是否有openId
+			var openId = this.getUrlParms('openId');
+			if(openId == null ){
+				openId = Cookies.get('openId');
+				//alert('从cookie中拿openId');
+				//alert(openId);
+			}else{
+				//范进cookie
+				Cookies.set('openId',openId);
+			}
+			//typeof(openId)=='undefined'&&
+			if(openId == null){
+				var reUrl = window.location.href;
+				//alert(reUrl);
+				//alert("开始授权")
+				window.location.href = url+'?reUrl='+reUrl;
+			}else{
+				return openId;
+			}
+		}
+    },
+    mounted: function() {
+		//获取openId
+		this.openId = this.getOpenId('http://betimes.free.idcfengye.com/blade-mp/ouath2/ouath');
+		this.id = this.getUrlParms('id');
+		this.getOtherServiceById();
+    }
+
+  });
+  
+
+</script>
+
+</html>

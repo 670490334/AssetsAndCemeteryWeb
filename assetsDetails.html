@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>资产详情</title>
+  <meta name="description" content="" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"  name="viewport" />
+  <script src="./cdn/axios/1.0.0/axios.min.js"></script>
+  <script src="./cdn/js.cookie.min.js"></script>
+  <link rel="stylesheet" href="./css/iconfont/iconfont.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.0/lib/index.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vant@2.0/lib/vant.min.js"></script>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+<body>
+  <div id="app">
+    <van-swipe class="goods-swipe" :autoplay="3000">
+      <van-swipe-item  v-for="imgs in goods.images">
+          <img :src="imgs.imgAddr" style="width: 100%;height: 100%">
+      </van-swipe-item>
+    </van-swipe>
+    <van-cell-group>
+      <van-cell>
+        <van-col >{{ goods.assetType }}1111111111111111111111111</van-col>
+      </van-cell>
+      <hr style="border-top:1px outset #cccccc;" />
+       <van-cell>
+        <van-col span="8"><span class="color-blue">{{ goods.rentPrice }}{{goods.rentalUnit}}/月</span></van-col>
+        <van-col span="8"><span class="color-blue">{{ goods.coveredArea}}m²</span></span></van-col>
+        <van-col><span class="color-blue">{{ goods.leaseType }}</span></van-col>
+      </van-cell>
+      <div id="span-lin">
+        <span class="color-gray">租金</span><span class="color-gray">建筑面积</span><span class="color-gray">租赁方式</span>
+      </div>
+      <hr style="border-top:1px outset #cccccc;" />
+      <van-cell>
+        <van-col span="9"><span class="color-gray">房屋类型：</span>{{goods.houseType}}</van-col>
+        <van-col span="14"><span class="color-gray">物业情况：</span>{{goods.estateCondition}}</van-col>
+        <van-col span="9"><span class="color-gray">楼层：</span>{{goods.floor}}(层)</van-col>
+        <van-col span="14"><span class="color-gray">有无产权：</span>{{goods.property}}</van-col>
+      </van-cell>
+      <hr style="border-top:1px outset #cccccc;" />
+     <van-cell>
+        <van-col span="20"><span class="color-gray">所属区域：</span>{{goods.area}} </van-col>
+        <van-col span="20"><span class="color-gray">详细地址：</span>{{goods.detailAddress}}</van-col>
+      </van-cell>
+    </van-cell-group>
+    <van-button type="info" @click="applyBut(goods.assetType,goods.rentPrice)" style="width: 100%">申请租赁</van-button>
+	
+  </div>
+</body>
+<script>
+  var Vue = window.Vue;
+  var vant = window.vant;
+   var openId = Cookies.get("openId");
+  // 注册组件
+  Vue.use(vant);
+
+  /*assetNo=Request.prototype("assetNo");
+  alert(assetNo);*/
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+          goods:{}
+      }
+    },
+    watch: {
+    },
+    methods: {
+		applyBut(assetType,rentPrice) {
+			 //获取组织
+            var organization = this.goods.organization;
+            //获取资产编码
+            var assetNo = this.goods.assetNo;
+			window.location.href="../../apply.html?assetTypes="+encodeURI(assetType)+"&price="+encodeURI(rentPrice)+"&organization="+encodeURI(organization)+"&assetNo="+encodeURI(assetNo);
+		},
+        GetRequest() {
+            var url = location.search; //获取url中"?"符后的字串 ('?modFlag=business&role=1')
+            var theRequest = new Object()
+            if ( url.indexOf( "?" ) != -1 ) {
+                var str = url.substr( 1 ); //substr()方法返回从参数值开始到结束的字符串；
+                var strs = str.split( "&" );
+                for ( var i = 0; i < strs.length; i++ ) {
+                    theRequest[ strs[ i ].split( "=" )[ 0 ] ] = ( strs[ i ].split( "=" )[ 1 ] );
+                }
+            }
+            return theRequest;
+        },
+        assets(){
+            var _self=this;
+            axios.get('http://192.168.3.5/blade-assets/assets/assetsList?wxUuid=1111'+'&assetNo='+this.GetRequest().assetNo+'&openId='+openId).then(function(response) {
+               _self.goods = response.data.data.records[2];
+			   
+              //  console.log(_self.goods)
+            //  console.log(response.data.data.records[0]);
+            });
+        },
+       getUrlParms(para) {
+                var search = location.search; //页面URL的查询部分字符串
+                var arrPara = new Array(); //参数数组。数组单项为包含参数名和参数值的字符串，如“para=value”
+                var arrVal = new Array(); //参数值数组。用于存储查找到的参数值
+
+                if (search != "") {
+                    var index = 0;
+                    search = search.substr(1); //去除开头的“?”
+                    arrPara = search.split("&");
+
+                    for (i in arrPara) {
+                        var paraPre = para + "="; //参数前缀。即参数名+“=”，如“para=”
+                        if (arrPara[i].indexOf(paraPre) == 0 && paraPre.length < arrPara[i].length) {
+                            arrVal[index] = decodeURI(arrPara[i].substr(paraPre.length)); //顺带URI解码避免出现乱码
+                            index++;
+                        }
+                    }
+                }
+                if (arrVal.length == 1) {
+                    return arrVal[0];
+                } else if (arrVal.length == 0) {
+                    return null;
+                } else {
+                    return arrVal;
+                }
+            },
+            getOpenId(url){
+                //先看url上面是否有openId
+                var openId = this.getUrlParms('openId');
+                //alert("获取url中openid"+openId);
+                if(openId == null ){
+                    openId = Cookies.get('openId');
+                  // alert('从cookie中拿openId'+openId);
+                }else{
+                    //放进cookie
+                    Cookies.set('openId',openId);
+                  //  alert("openid放入cookies")
+                }
+                if(openId == null){
+                    var reUrl = window.location.href;
+                    //alert(reUrl);
+                   // alert("开始授权")
+                    window.location.href = url+'?reUrl='+reUrl;
+                }else{
+                    return openId;
+
+                }
+            }
+           
+    },
+      mounted: function () {
+		 var isok = this.getOpenId("http://betimes.free.idcfengye.com/blade-mp/ouath2/ouath");
+		   if(isok != null){
+				this.GetRequest();
+				this.assets()
+		   }
+      }
+  });
+
+
+</script>
+<style lang="less">
+.color-blue{
+  color: dodgerblue;
+}
+.color-gray{
+  color: #666666;
+  font-size: 11px;
+ }
+ #span-lin{
+   margin-top: -6px;
+}
+  #span-lin >span{
+    margin: 10%;
+  }
+</style>
+</html>

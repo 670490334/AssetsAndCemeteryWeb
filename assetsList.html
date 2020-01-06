@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Access-Control-Allow-Origin" content="*" />
+    <title>资产列表</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"  name="viewport" />
+    <script src="./cdn/axios/1.0.0/axios.min.js"></script>
+    <script src="./cdn/js.cookie.min.js"></script>
+    <link rel="stylesheet" href="./css/iconfont/iconfont.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.0/lib/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.0/lib/vant.min.js"></script>
+	<!--weui样式引入-->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/weui/1.1.3/style/weui.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/jquery-weui/1.2.1/css/jquery-weui.min.css">
+    <script src="https://cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-weui/1.2.1/js/jquery-weui.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <div>
+        <van-search
+            v-model="value"
+            placeholder="搜索商铺/写字楼"
+            show-action
+            shape="round"
+            @search="onSearch"
+        >
+            <div slot="action" @click="onSearch(value)">搜索</div>
+        </van-search>
+    </div>
+    <div>
+        <van-dropdown-menu>
+            <van-dropdown-item v-model="value1" :options="option1" @change="changeInfo(value1)"></van-dropdown-item>
+            <van-dropdown-item v-model="value2" :options="option2"></van-dropdown-item>
+            <van-dropdown-item v-model="value3" :options="option3"></van-dropdown-item>
+        </van-dropdown-menu>
+    </div>
+    <div v-for="item in records" style="width: 100%;height: 120px;" @click="butinfo(item.assetNo)" class="swipeout-isopen">
+        <div class="van-img-src">
+            <van-swipe class="goods-swipe" :autoplay="3000">
+                <van-swipe-item  v-for="imgs in item.images">
+                    <img :src="imgs.imgAddr" style="width: 95%;height: 100%">
+                </van-swipe-item>
+            </van-swipe>
+        </div>
+        <div class="van-pro">
+            <div style="font-size: 15px">{{item.assetType}}</div>
+            <div><span style="color: #666666">{{item.coveredArea}}m².{{item.leaseType}}</span></div>
+            <div id="float-right"><span style="color: red">{{item.cashDeposit}}/月</span></div>
+            <div>{{item.area}}</div>
+            <div>
+                <van-tag plain type="primary">{{item.floor}}/层</van-tag>
+                <van-tag plain type="primary">免费停车</van-tag>
+            </div>
+        </div>
+        <div class="clear"></div>
+		<div>
+			<hr style="border-top:1px outset #cccccc;" />
+		</div>
+    </div>
+	
+</div>
+</body>
+<script >
+    var Vue = window.Vue;
+    var vant = window.vant;
+    var axios = window.axios;
+	 var openId = Cookies.get("openId");
+    var value;
+	$('.swipeout-isopen').swipeout('open') //打开
+    $('.swipeout-isopen').swipeout('close') //关闭
+    // 注册组件
+    Vue.use(vant);
+    new Vue({
+        el: '#app',
+        data() {
+            return  {
+                records: [],
+                value1: 0,
+                value2: 'a',
+                value3:'a',
+                option1: [
+                    { text: '类别', value: 0 },
+                    { text: '类别1', value: 1 },
+                    { text: '类别2', value: 2 }
+                ],
+                option2: [
+                    { text: '面积', value: 'a' },
+                    { text: '面积1', value: 'b' },
+                    { text: '面积2', value: 'c' },
+                ],
+                option3: [
+                    { text: '价格', value: 'a' },
+                    { text: '价格1', value: 'b' },
+                    { text: '价格2', value: 'c' },
+                ]
+            }
+        },
+        watch: {
+
+        },
+        methods: {
+            onSearch(value){
+              alert("搜索内容："+value)
+            },
+            changeInfo(value1){
+                alert(value1);
+            },
+            butinfo(assetNo){
+                //传递参数
+               // alert(assetNo)
+                window.location.href="../../assetsDetails.html?assetNo="+assetNo;
+            },
+            assets(){
+                var _self = this;
+				var openId = "asdasdasdas";
+                axios.get('http://betimes.free.idcfengye.com/blade-assets/assets/assetsList?wxUuid=1111&openId='+openId).then(function(response) {
+                    _self.records = response.data.data.records;
+                    console.log(_self.records);
+                });
+            },
+			 getUrlParms(para) {
+                var search = location.search; //页面URL的查询部分字符串
+                var arrPara = new Array(); //参数数组。数组单项为包含参数名和参数值的字符串，如“para=value”
+                var arrVal = new Array(); //参数值数组。用于存储查找到的参数值
+
+                if (search != "") {
+                    var index = 0;
+                    search = search.substr(1); //去除开头的“?”
+                    arrPara = search.split("&");
+
+                    for (i in arrPara) {
+                        var paraPre = para + "="; //参数前缀。即参数名+“=”，如“para=”
+                        if (arrPara[i].indexOf(paraPre) == 0 && paraPre.length < arrPara[i].length) {
+                            arrVal[index] = decodeURI(arrPara[i].substr(paraPre.length)); //顺带URI解码避免出现乱码
+                            index++;
+                        }
+                    }
+                }
+                if (arrVal.length == 1) {
+                    return arrVal[0];
+                } else if (arrVal.length == 0) {
+                    return null;
+                } else {
+                    return arrVal;
+                }
+            },
+            getOpenId(url){
+                //先看url上面是否有openId
+                var openId = this.getUrlParms('openId');
+               // alert("获取url中openid"+openId);
+                if(openId == null ){
+                    openId = Cookies.get('openId');
+                  //  alert('从cookie中拿openId'+openId);
+                }else{
+                    //放进cookie
+                    Cookies.set('openId',openId);
+                   // alert("openid放入cookies")
+                }
+                if(openId == null){
+                    var reUrl = window.location.href;
+                    //alert(reUrl);
+                    // alert("开始授权")
+                    window.location.href = url+'?reUrl='+reUrl;
+                }else{
+                    return openId;
+
+                }
+            }
+           
+        },
+        mounted: function () {
+			//var isok = this.getOpenId("http://betimes.free.idcfengye.com/blade-mp/ouath2/ouath");
+		  // if(isok != null){
+				this.assets()
+		   //}
+        }
+    });
+
+</script>
+<style lang="less">
+    #float-right{
+        float: right;
+        margin-top: -17px;
+        font-size: 15px;
+    }
+    .van-img-src{
+        width: 30%;
+        height: 80%;
+        float: left;
+    }
+    .van-pro{
+        width: 95%;
+        height: 80%;
+        float: top;
+        font-size: 12px;
+    }
+     .van-pro>div{
+        line-height: 20px;
+    }
+    .clear{ clear:both}
+    .van-checkbox__label {
+        width: 100%;
+        height: auto; // temp
+    padding: 0 10px 0 15px;
+        box-sizing: border-box;
+    }
+    .van-checkbox__icon {
+        top: 50%;
+        left: 10px;
+        z-index: 1;
+        position: absolute;
+        margin-top: -10px;
+    }
+    .van-card__price {
+        color: #f44;
+    }
+
+</style>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>增值服务</title>
+   <meta name="description" content=""/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"  name="viewport" />
+    <script src="./cdn/axios/1.0.0/axios.min.js"></script>
+    <script src="./cdn/js.cookie.min.js"></script>
+    <link rel="stylesheet" href="./css/iconfont/iconfont.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.0/lib/index.css">
+	<link rel="stylesheet" href="./css/weiui/weui.css"/>
+    <link rel="stylesheet" href="./css/weiui/example.css"/>
+	<link rel="stylesheet" href="./css/iconfont/iconfont.css">
+    <link rel="stylesheet" href="./css/weiui/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.0/lib/vant.min.js"></script>
+    <script src="./cdn/jquery/2.0.0/jquery.min.js"></script>
+	<script src="./cdn/url_ip.js"></script>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+<body>
+  <div id="app">
+<div style="padding-left: 80px;margin-top: 25px">
+	
+	</div>
+	<br>
+	 <div class="weui-loadmore" v-if="this.loadStatus==0">
+            <i class="weui-loading"></i>
+            <span class="weui-loadmore__tips">正在加载</span>
+        </div>
+    <div class="van-cell-group van-hairline--top-bottom">
+		<div class="van-cell van-cell--center van-field">
+			<div class="van-cell__title van-field__label"><span>价格</span></div>
+			<div class="van-cell__value">
+				<div class="van-field__body"><span>{{ this.price }}</span>
+				</div>
+			</div>
+			<br>
+		</div>
+	</div>
+	<br>
+	<div class="van-cell-group van-hairline--top-bottom">
+		<div class="van-cell van-cell--center van-field">
+			<div class="van-cell__title van-field__label"><span>服务名称</span></div>
+			<div class="van-cell__value">
+				<div class="van-field__body"><span>{{this.name}}</span>
+					
+				</div>
+			</div>
+			<br>
+		</div>
+	</div>
+	<br>
+
+	<div class="van-cell-group van-hairline--top-bottom">
+		<div class="van-cell van-cell--center van-field">
+			<div class="van-cell__title van-field__label"><span>详情描述</span></div>
+			<div class="van-cell__value">
+				<div class="van-field__body"><span>{{this.description}}</span>
+				</div>
+			</div>
+			<br>
+		</div>
+	</div>
+	  <div class="van-cell-group van-hairline--top-bottom">
+		  <div class="van-cell van-cell--center van-field">
+			  <div class="van-cell__title van-field__label"><span>墓地选择</span></div>
+			  <van-dropdown-menu>
+				  <van-dropdown-item v-model="value" :options="option" />
+				  <!--<van-dropdown-item title="筛选" ref="item">-->
+					  <!--<van-switch-cell v-model="switch1" title="包邮" />-->
+					  <!--<van-switch-cell v-model="switch2" title="团购" />-->
+				  <!--</van-dropdown-item>-->
+			  </van-dropdown-menu>
+			  <br>
+		  </div>
+	  </div>
+
+	<div class="van-cell-group van-hairline--top-bottom">
+		<div class="van-cell van-cell--center van-field">
+			<div class="van-cell__title van-field__label"><span>备注</span></div>
+			<div class="van-cell__value">
+				<input v-model="customerRemark" type="text" placeholder="请输入备注" class="van-field__control">
+			</div>
+			<br>
+		</div>
+	</div>
+	<br>
+	<br>
+	<br>
+	<button class="van-button plain  van-button--info van-button--large" @click="buy()"><span class="van-button__text">
+		下单
+	  </span></button>
+	</div>
+  </div>
+</body>
+<script>
+  var Vue = window.Vue;
+  var vant = window.vant;
+   var openId = Cookies.get("openId");
+  // 注册组件
+  Vue.use(vant);
+
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+		  loadStatus:0,
+		  openId:'omqip1PrsZsKCiVlyNH1xhVzao3I',
+		  price:0,
+		  description:'',
+		  serviceId:'',
+		  name:'',
+		  customerRemark:'',
+		  serviceBillId:'',
+          records:[],
+		  value : 0,
+          option: [
+              { text: '选择墓穴', value: 0 }
+		  ]
+      }
+    },
+    watch: {
+    },
+    methods: {
+		getValueServiceAddedById(){
+			this.serviceId = this.getUrlParms("serviceId");
+			var _self = this;
+			var serviceId = {'serviceId':this.serviceId,'openId':this.openId};
+			axios.post('http://betimes.free.idcfengye.com/blade-cemetery/cemetery/getValueAddedServiceById',serviceId).then(function(response) {
+				if(response.data.code!=200){
+					alert("系统维护")
+				}else{
+					_self.price = response.data.data.vasbData.price;
+					_self.description = response.data.data.vasbData.description;
+					_self.name = response.data.data.vasbData.name;
+                    _self.records = response.data.data.graveInfo;
+                    for(j = 0,len=_self.records.length; j < len; j++) {
+						_self.option[j] = {'text':_self.records[j].graveName,'value':j}
+                    }
+					//alert(response.data.data.graveInfo[0].graveName);
+					_self.loadStatus = 1;
+				}
+			})
+		},
+        buy(){
+		    var ip_url = url_ip();
+		    var val = this.value;
+		    var constarctId = this.records[val].id;
+			var data = {"openId":this.openId,"price":this.price,"serviceId":this.serviceId,"customerRemark":this.customerRemark,"constarctId":constarctId}
+            axios.post('http://betimes.free.idcfengye.com/blade-cemetery/cemetery/buyValueAddedService',data).then(function(response) {
+               //返回成功
+			   if(response.data.code!=200){
+					alert('请先绑定微信公众平台,若已绑定，请联系客服');
+					window.location.href=ip_url+':8082/gm_bunding.html';
+			   }else{
+
+			       var id = encodeURIComponent(encodeURIComponent(response.data.data.serviceBillId))
+				   //alert(id)
+				   window.location.href=ip_url+':8082/myCetemeryOrder.html?id='+id;
+			   }
+            });
+        },
+        buyService(){
+				//转换成分
+                var amount = this.records.CFPRICE*100;
+                //转码encodeURIComponent两次转码
+                var goodsName = encodeURIComponent(encodeURIComponent('公墓增值服务'));
+                var billId = this.records.FID;
+                //测试所以url上的amount写的死数据，每次给500开发测试也太贵了吧哈哈
+                window.location.href = "http://betimes.free.idcfengye.com/blade-pay/goods/buy?amount=1" + "&goodsName=" + goodsName + "&billId=" + billId;
+		},
+        getUrlParms(para) {
+            var search = location.search; //页面URL的查询部分字符串
+            var arrPara = new Array(); //参数数组。数组单项为包含参数名和参数值的字符串，如“para=value”
+            var arrVal = new Array(); //参数值数组。用于存储查找到的参数值
+
+            if (search != "") {
+                var index = 0;
+                search = search.substr(1); //去除开头的“?”
+                arrPara = search.split("&");
+
+                for (i in arrPara) {
+                    var paraPre = para + "="; //参数前缀。即参数名+“=”，如“para=”
+                    if (arrPara[i].indexOf(paraPre) == 0 && paraPre.length < arrPara[i].length) {
+                        arrVal[index] = decodeURI(arrPara[i].substr(paraPre.length)); //顺带URI解码避免出现乱码
+                        index++;
+                    }
+                }
+            }
+            if (arrVal.length == 1) {
+                return arrVal[0];
+            } else if (arrVal.length == 0) {
+                return null;
+            } else {
+                return arrVal;
+            }
+        },
+        getOpenId(url){
+            //先看url上面是否有openId
+            var openId = this.getUrlParms('openId');
+            //alert("获取url中openid"+openId);
+            if(openId == null ){
+                openId = Cookies.get('openId');
+              //  alert('从cookie中拿openId'+openId);
+            }else{
+                //放进cookie
+                Cookies.set('openId',openId);
+                // alert("openid放入cookies")
+            }
+            if(openId == null){
+                var reUrl = window.location.href;
+                //alert(reUrl);
+                // alert("开始授权")
+                window.location.href = url+'?reUrl='+reUrl;
+            }else{
+                return openId;
+
+            }
+        }
+    },
+      mounted: function () {
+		 this.openId = this.getOpenId('http://betimes.free.idcfengye.com/blade-mp/ouath2/ouath');
+         this.getValueServiceAddedById();
+          
+      }
+  });
+
+
+</script>
+<style lang="less">
+
+</style>
+</html>

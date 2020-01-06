@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<!--
+招标详情
+-->
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title></title>
+    <meta name="description" content=""/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <script src="./cdn/axios/1.0.0/axios.min.js"></script>
+    <script src="./cdn/js.cookie.min.js"></script>
+    <link rel="stylesheet" href="./css/iconfont/iconfont.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.0/lib/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.0/lib/vant.min.js"></script>
+    <head>
+        <meta charset="utf-8">
+        <title>招标详情</title>
+    </head>
+<body>
+<div id="app">
+    <van-swipe class="goods-swipe" :autoplay="3000">
+        <van-swipe-item v-for="thumb in goods.thumb" :key="thumb">
+            <img :src="thumb">
+        </van-swipe-item>
+    </van-swipe>
+    <van-cell-group>
+        <van-cell>
+            <van-col span="8">组织：{{ records.organization }}</van-col>
+            <van-col span="8">编码：{{ records.assetno }}</van-col>
+            <van-col span="8">租金：{{ records.rentprice }}({{records.rentalunit}})</van-col>
+        </van-cell>
+        <van-cell>
+            <van-col span="12">资产类型：{{ records.assettypes }}</van-col>
+            <van-col span="8">保证金：{{ records.cashdeposit }}</van-col>
+            <van-col span="8">建筑面积：{{ records.coveredArea}}</van-col>
+        </van-cell>
+        <van-cell>
+            <van-col span="10">有无产权：{{ records.property }}</van-col>
+            <van-col span="10">租赁方式：{{ records.leasetype }}</van-col>
+            <van-col span="10">房屋类型：{{ records.housetype }}</van-col>
+        </van-cell>
+        <van-cell>
+            <van-col span="10">楼层：{{ records.floor }}(层)</van-col>
+            <van-col span="10">物业情况：{{ records.estatecondition }}</van-col>
+        </van-cell>
+        <van-cell>
+            <van-col span="30">所属区域：{{ records.area }}</van-col>
+            <van-col span="30">详细地址：{{ records.detailaddress }}</van-col>
+        </van-cell>
+        <van-cell>
+        </van-cell>
+    </van-cell-group>
+
+    <!--<van-cell-group class="goods-cell-group">
+      <van-cell value="进入店铺" icon="shop-o" is-link @click="sorry">
+        <template slot="title">
+          <span class="van-cell-text">有赞的店</span>
+          <van-tag class="goods-tag" type="danger">官方</van-tag>
+        </template>
+      </van-cell>
+      <van-cell title="线下门店" icon="location-o" is-link @click="sorry" />
+    </van-cell-group>-->
+
+    <van-cell-group class="goods-cell-group">
+        <van-cell title="查看商品详情" is-link @click="sorry"/>
+    </van-cell-group>
+
+    <van-goods-action>
+        <van-goods-action-button type="primary" @click="sorry">
+            联系房东
+        </van-goods-action-button>
+        <van-goods-action-button type="info" @click="sorry">
+            立即预定
+        </van-goods-action-button>
+    </van-goods-action>
+</div>
+</body>
+<script>
+    var Vue = window.Vue;
+    var vant = window.vant;
+
+    // 注册组件
+    Vue.use(vant);
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                goods: {
+
+                    thumb: [
+                        'https://img.yzcdn.cn/public_files/2017/10/24/e5a5a02309a41f9f5def56684808d9ae.jpeg',
+                        'https://img.yzcdn.cn/public_files/2017/10/24/1791ba14088f9c2be8c610d0a6cc0f93.jpeg'
+                    ]
+                },
+                records: []
+            }
+        },
+        watch: {},
+        methods: {
+            formatPrice() {
+                return '¥' + (this.goods.price / 100).toFixed(2);
+            },
+            onClickCart() {
+                this.$router.push('cart');
+            },
+            sorry() {
+                Toast('暂无后续逻辑~');
+            },
+            getAsset() {
+                // $.get('http://34aaad62.ngrok.io/jeecg-boot/hr/wxnAsset/list',function (data,status) {
+                //     this.records = data.result.records;
+                //     console.log(JSON.stringify(this.records));
+                //     console.log(this.records[0].createTime)
+                // })
+                var _self = this;
+                var id = this.getUrlParms('id');
+                axios.get('http://localhost/jeecg-boot/hr/wxnAsset/queryById?id=' + id).then(function (response) {
+                    console.log(JSON.stringify(response));
+                    _self.records = response.data.result;
+                    console.log(JSON.stringify(_self.records));
+                });
+            },    //获取地址栏参数的函数
+            getUrlParms(para) {
+                var search = location.search; //页面URL的查询部分字符串
+                var arrPara = new Array(); //参数数组。数组单项为包含参数名和参数值的字符串，如“para=value”
+                var arrVal = new Array(); //参数值数组。用于存储查找到的参数值
+
+                if (search != "") {
+                    var index = 0;
+                    search = search.substr(1); //去除开头的“?”
+                    arrPara = search.split("&");
+
+                    for (i in arrPara) {
+                        var paraPre = para + "="; //参数前缀。即参数名+“=”，如“para=”
+                        if (arrPara[i].indexOf(paraPre) == 0 && paraPre.length < arrPara[i].length) {
+                            arrVal[index] = decodeURI(arrPara[i].substr(paraPre.length)); //顺带URI解码避免出现乱码
+                            index++;
+                        }
+                    }
+                }
+
+                if (arrVal.length == 1) {
+                    return arrVal[0];
+                } else if (arrVal.length == 0) {
+                    return null;
+                } else {
+                    return arrVal;
+                }
+            }
+
+        },
+        mounted: function () {
+            this.getAsset()
+        }
+    });
+
+
+    //COOKIE 使用方法
+    Cookies.set('aaaaa', 'dddddd');
+    Cookies.set('name', 'value');
+    console.log(Cookies.get('name'));
+
+</script>
+<style lang="less">
+    /*.goods {
+      padding-bottom: 50px;
+    &-swipe {
+    img {
+      width: 100%;
+      display: block;
+    }
+    }
+    &-title {
+       font-size: 16px;
+     }
+    &-price {
+       color: #f44;
+     }
+    &-express {
+       color: #999;
+       font-size: 12px;
+       padding: 5px 15px;
+     }
+    &-cell-group {
+       margin: 15px 0;
+    .van-cell__value {
+      color: #999;
+    }
+    }
+    &-tag {
+       margin-left: 5px;
+     }
+    }*/
+</style>
+</html>

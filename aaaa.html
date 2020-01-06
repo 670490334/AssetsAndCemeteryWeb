@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<!-- 
+增值业务----代扫墓
+LF
+ -->
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>订单详情</title>
+    <meta name="description" content=""/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport"/>
+    <script src="./cdn/axios/1.0.0/axios.min.js"></script>
+    <script src="./cdn/js.cookie.min.js"></script>
+    <link rel="stylesheet" href="./css/iconfont/iconfont.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.0/lib/index.css">
+    <link rel="stylesheet" href="./css/weiui/weui.css"/>
+    <link rel="stylesheet" href="./css/weiui/example.css"/>
+    <link rel="stylesheet" href="./css/iconfont/iconfont.css">
+    <link rel="stylesheet" href="./css/weiui/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.0/lib/vant.min.js"></script>
+    <script src="./cdn/jquery/2.0.0/jquery.min.js"></script>
+    <script src="./cdn/url_ip.js"></script>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+    </head>
+
+<body>
+<div id="app">
+<img v-for="img in imageList" v-lazy="img" >
+
+
+</div>
+
+</body>
+<!--<script>
+        var ua = navigator.userAgent.toLowerCase();
+        var isWeixin = ua.indexOf('micromessenger') != -1;
+        if (!isWeixin) {
+            window.location.href = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=888"
+        }
+</script>-->
+
+<script>
+    var Vue = window.Vue;
+    var vant = window.vant;
+    var axios = window.axios;
+
+
+    // 注册组件
+    Vue.use(vant);
+	
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+				openId:'',
+				mobile:'',
+				customerNo:'',
+				captcha:'',
+				textval:1,
+				timer:null,
+				count :60,
+				content:'',
+               imageList: [
+        'https://img.yzcdn.cn/vant/apple-1.jpg',
+        'https://img.yzcdn.cn/vant/apple-2.jpg'
+      ]
+            }
+        },
+		
+		
+        watch: {},
+        methods: {
+			geturl(){
+				var ip = url_ip();
+				alert(ip)
+			},
+            onChange(index) {
+      this.index = index;
+    }
+        },
+        mounted: function () {
+            //获取openId
+            //this.openId = this.getOpenId('http://betimes.free.idcfengye.com/blade-mp/ouath2/ouath');
+            //this.id = this.getUrlParms('id');
+            //this.getOrderById();
+			this.geturl()
+        }
+
+    });
+
+
+</script>
+
+</html>

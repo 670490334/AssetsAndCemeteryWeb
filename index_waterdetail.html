@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>水电费账单</title>
+    <meta name="description" content=""/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"  name="viewport" />
+    <script src="./cdn/axios/1.0.0/axios.min.js"></script>
+    <script src="./cdn/js.cookie.min.js"></script>
+    <link rel="stylesheet" href="./css/iconfont/iconfont.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.0/lib/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.0/lib/vant.min.js"></script>
+    <script src="./cdn/jquery/2.0.0/jquery.min.js"></script>
+	<script src="./cdn/url_ip.js"></script>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+    </head>
+
+<body>
+<div id="app" style="background-color: #ffffff">
+
+    <van-panel title="水电费账单" :status="records.status==0 ? '未支付':'已支付'">
+        <div style="font-size: 15px;padding-left: 20px;margin-top: 30px">
+            <div style="font-size: 15px;padding-left: 20px;margin-top: 30px">
+                <div><span style="color: #666666">承租人：</span><span
+                        style="padding-left: 75px">{{ records.customerName }}</span></div>
+                <div style="margin-top: 20px"><span style="color: #666666">滞纳金：</span><span style="padding-left: 75px">{{records.overdueFine}}</span>
+                </div>
+                <div style="margin-top: 20px"><span style="color: #666666">合计金额：</span><span
+                        style="padding-left: 60px;color: #55a532">¥{{records.totalMoney}}</span></div>
+                <div style="margin-top: 20px"><span style="color: #666666">账单编码：</span><span style="padding-left: 60px">{{records.billNo}}</span>
+                </div>
+                <div style="margin-top: 20px"><span style="color: #666666">资产位置：</span><span style="padding-left: 60px">{{records.assetlocation}}</span>
+                </div>
+                <div style="margin-top: 20px"><span style="color: #666666">上期水止度：</span><span
+                        style="padding-left: 45px">{{records.waterOver}}</span></div>
+                <div style="margin-top: 20px"><span style="color: #666666">上期电止度：</span><span
+                        style="padding-left: 45px">{{records.electricityOver}}</span></div>
+                <div style="margin-top: 20px"><span style="color: #666666">缴纳水电费：</span><span
+                        style="padding-left: 45px">¥{{records.payUtilities}}</span></div>
+                <div style="margin-top: 20px"><span style="color: #666666">拖欠水电费：</span><span
+                        style="padding-left: 45px">¥{{records.arrearsUtilities}}</span>
+                </div>
+            </div>
+
+        </div>
+
+    </van-panel>
+    <div v-if="records.status==0" style="padding-top: 40px;background-color: #ffffff" >
+        <div id="payDiv">
+            <van-button size="large " round type="primary" @click="pay()">支付</van-button>
+        </div>
+    </div>
+    <div style="height: 100px;background-color: #ffffff">
+    </div>
+</div>
+
+</body>
+<!--<script>
+        var ua = navigator.userAgent.toLowerCase();
+        var isWeixin = ua.indexOf('micromessenger') != -1;
+        if (!isWeixin) {
+            window.location.href = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=888"
+        }
+</script>-->
+
+<script>
+    var Vue = window.Vue;
+    var vant = window.vant;
+    var axios = window.axios;
+	var url_ip = url_ip();
+
+    // 注册组件
+    Vue.use(vant);
+
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                records: []
+
+            }
+        },
+        watch: {},
+        methods: {
+
+            pay() {
+				if(this.records.status == 1){
+					return;
+				}
+                //转换成分
+                var amount = parseFloat(this.records.totalMoney) * 100;
+                //转码encodeURIComponent两次转码
+                var goodsName = encodeURIComponent(encodeURIComponent('水电费账单'));
+                var billId = this.records.billId;
+                //测试所以url上的amount写的死数据，每次给500开发测试也太贵了吧哈哈
+                window.location.href = "http://betimes.free.idcfengye.com/blade-pay/goods/buy?amount=1" + "&goodsName=" + goodsName + "&billId=" + billId;
+            },
+            getWaterByIdListUrl() {
+                var _self = this;
+                var id = this.getUrlParms('id');
+                axios.get(url_ip+'/blade-assets/assets/getWaterDetailBill?id=' + id).then(function (response) {
+                    console.log(JSON.stringify(response));
+                    _self.records = response.data.data;
+                    //删除支付标签按钮失败
+                    //if(_self.records.status!=0){
+                    //$("#payDiv").remove();
+                    //}
+
+                    //console.log(JSON.stringify(_self.records));
+                });
+            },
+            getAsset() {
+                // $.get('http://34aaad62.ngrok.io/jeecg-boot/hr/wxnAsset/list',function (data,status) {
+                //     this.records = data.result.records;
+                //     console.log(JSON.stringify(this.records));
+                //     console.log(this.records[0].createTime)
+                // })
+                var _self = this;
+                axios.get('http://b19d4916.ngrok.io/jeecg-boot/hr/wxnAsset/list').then(function (response) {
+                    // console.log(JSON.stringify(response));
+                    _self.records = response.data.result.records;
+                    console.log(JSON.stringify(_self.records));
+                });
+            },
+            getUrlParms(para) {
+                var search = location.search; //页面URL的查询部分字符串
+                var arrPara = new Array(); //参数数组。数组单项为包含参数名和参数值的字符串，如“para=value”
+                var arrVal = new Array(); //参数值数组。用于存储查找到的参数值
+
+                if (search != "") {
+                    var index = 0;
+                    search = search.substr(1); //去除开头的“?”
+                    arrPara = search.split("&");
+
+                    for (i in arrPara) {
+                        var paraPre = para + "="; //参数前缀。即参数名+“=”，如“para=”
+                        if (arrPara[i].indexOf(paraPre) == 0 && paraPre.length < arrPara[i].length) {
+                            arrVal[index] = decodeURI(arrPara[i].substr(paraPre.length)); //顺带URI解码避免出现乱码
+                            index++;
+                        }
+                    }
+                }
+
+                if (arrVal.length == 1) {
+                    return arrVal[0];
+                } else if (arrVal.length == 0) {
+                    return null;
+                } else {
+                    return arrVal;
+                }
+            }
+        },
+        mounted: function () {
+            this.getWaterByIdListUrl();
+
+        }
+
+    });
+
+
+
+
+</script>
+
+</html>

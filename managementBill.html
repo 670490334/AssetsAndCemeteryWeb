@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*"/>
+    <meta http-equiv="Access-Control-Allow-Credentials" true>
+    <title>管理费</title>
+    <meta name="description" content=""/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport"/>
+    <script src="./cdn/axios/1.0.0/axios.min.js"></script>
+    <script src="./cdn/js.cookie.min.js"></script>
+    <link rel="stylesheet" href="./css/iconfont/iconfont.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.0/lib/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.0/lib/vant.min.js"></script>
+    <!--weui样式引入-->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/weui/1.1.3/style/weui.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/jquery-weui/1.2.1/css/jquery-weui.min.css">
+    <script src="https://cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-weui/1.2.1/js/jquery-weui.min.js"></script>
+    <script src="./cdn/url_ip.js"></script>
+</head>
+<body>
+<div class="page preview js_show">
+    <!-- <div class="page__hd">
+         <h1 class="page__title">租金账单</h1>
+         <p class="page__desc">账单列表</p>
+     </div> -->
+    <div class="page__bd">
+        <div id="app">
+
+            <div v-for="item in records" style="width: 98%;height: 100%;">
+                <div @click="butinfo(item.id,item.constractNum)">
+                    <!--<div class="weui-form-preview">-->
+                    <!--<div class="weui-form-preview__bd"  style="background-color: #F8F8F8">-->
+                    <!--<div class="weui-form-preview__item">-->
+                    <!--<label class="weui-form-preview__label">年度：</label>-->
+                    <!--<span class="weui-form-preview__value">{{ item.year }}</span>-->
+                    <!--</div>-->
+                    <!--<div class="weui-form-preview__item">-->
+                    <!--<label class="weui-form-preview__label">合同编号：</label>-->
+                    <!--<span class="weui-form-preview__value">{{ item.constractNum }}</span>-->
+                    <!--</div>-->
+                    <!--<div class="weui-form-preview__item">-->
+                    <!--<label class="weui-form-preview__label">应付金额：</label>-->
+                    <!--<span class="weui-form-preview__value"><span style="color: red">{{item.applyAmount}}￥</span></span>-->
+                    <!--</div>-->
+                    <!--<div style="color: rgba(135,142,143,0.64)">点击查看详情购买</div>-->
+                    <!--</div>-->
+                    <!--</div>-->
+                    <!--<div class="van-pro" style="padding-left: 10px;border-style:inset">-->
+                    <!--<div style="font-size: 20px">{{item.year}}年管理费</div>-->
+                    <!--<div style="padding-top: 10px"><span style="color: #666666">合同编号：{{item.constractNum}}</span></div>-->
+
+                    <!--<div style="padding-top: 10px" id="float-right">应付金额：<span style="color: red;width: 200px">￥{{item.applyAmount}}</span>-->
+                    <!--<span style="color: #666666;font-size: 12px;padding-left: 300px">查看详情</span>-->
+                    <!--</div>-->
+
+
+                    <!--</div>-->
+                    <!--<div class="clear"></div>-->
+                    <!--<div>-->
+                    <!--<hr style="border-top:1px outset #cccccc;" />-->
+                    <!--</div>-->
+                    <div class="weui-form-preview">
+                        <div class="weui-form-preview__hd">
+                            <div class="weui-form-preview__item">
+                                <label class="weui-form-preview__label">账单金额</label>
+                                <em class="weui-form-preview__value">¥{{ item.applyAmount }}</em>
+                            </div>
+                        </div>
+                        <div class="weui-form-preview__bd">
+                            <div class="weui-form-preview__item">
+                                <label class="weui-form-preview__label">合同编号</label>
+                                <span class="weui-form-preview__value">{{item.constractNum}}</span>
+                            </div>
+                            <div class="weui-form-preview__item">
+                                <label class="weui-form-preview__label">年度</label>
+                                <span class="weui-form-preview__value">{{item.year}}年</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    var Vue = window.Vue;
+    var vant = window.vant;
+    var axios = window.axios;
+    // 注册组件
+    Vue.use(vant);
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                openId: '',
+                records: []
+            };
+        },
+        watch: {},
+        methods: {
+            butinfo(serviceId, constractNum) {
+                var id = encodeURIComponent(encodeURIComponent(serviceId));
+				var constractNums = encodeURIComponent(encodeURIComponent(constractNum));
+                //alert(id);
+                var ip_url = url_ip();
+                window.location.href = ip_url+":8082/managementBillDetail.html?id=" + id;
+            },
+            getManagementBillList() {
+                var _self = this;
+                axios.get('http://betimes.free.idcfengye.com/blade-cemetery/cemetery/getManagementBillList?openId=' + this.openId).then(function (response) {
+                    if (response.data.code != 200) {
+                        alert('服务繁忙，请稍后再试')
+                    } else {
+                        _self.records = response.data.data;
+                    }
+
+                });
+            },
+            sorry() {
+                Toast('暂无后续逻辑~');
+            },
+            getUrlParms(para) {
+                var search = location.search; //页面URL的查询部分字符串
+                var arrPara = new Array(); //参数数组。数组单项为包含参数名和参数值的字符串，如“para=value”
+                var arrVal = new Array(); //参数值数组。用于存储查找到的参数值
+
+                if (search != "") {
+                    var index = 0;
+                    search = search.substr(1); //去除开头的“?”
+                    arrPara = search.split("&");
+
+                    for (i in arrPara) {
+                        var paraPre = para + "="; //参数前缀。即参数名+“=”，如“para=”
+                        if (arrPara[i].indexOf(paraPre) == 0 && paraPre.length < arrPara[i].length) {
+                            arrVal[index] = decodeURI(arrPara[i].substr(paraPre.length)); //顺带URI解码避免出现乱码
+                            index++;
+                        }
+                    }
+                }
+                if (arrVal.length == 1) {
+                    return arrVal[0];
+                } else if (arrVal.length == 0) {
+                    return null;
+                } else {
+                    return arrVal;
+                }
+            },
+            getOpenId(url) {
+                //先看url上面是否有openId
+                var openId = this.getUrlParms('openId');
+                //alert("获取url中openid"+openId);
+                if (openId == null) {
+                    openId = Cookies.get('openId');
+                    //  alert('从cookie中拿openId'+openId);
+                } else {
+                    //放进cookie
+                    Cookies.set('openId', openId);
+                    //alert("openid放入cookies")
+                }
+                if (openId == null) {
+                    var reUrl = window.location.href;
+                    //alert(reUrl);
+                    // alert("开始授权")
+                    window.location.href = url + '?reUrl=' + reUrl;
+                } else {
+                    return openId;
+
+                }
+            }
+        },
+        mounted: function () {
+            this.openId = this.getOpenId('http://betimes.free.idcfengye.com/blade-mp/ouath2/ouath');
+            this.getManagementBillList();
+        }
+    });
+
+
+</script>
+</html>

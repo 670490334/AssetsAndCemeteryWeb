@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<!-- 
+客户信息绑定
+LF
+ -->
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>绑定</title>
+    <meta name="description" content=""/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"  name="viewport" />
+    <script src="./cdn/axios/1.0.0/axios.min.js"></script>
+    <script src="./cdn/js.cookie.min.js"></script>
+    <link rel="stylesheet" href="./css/iconfont/iconfont.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.0/lib/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.0/lib/vant.min.js"></script>
+    <script src="./cdn/jquery/2.0.0/jquery.min.js"></script>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+    </head>
+
+<body>
+<div id="app">
+	<div style="padding-left: 80px;margin-top: 25px">
+	<van-tag style="font-size: 20px; padding-left: 10px;margin-top: 10px" type="default">宏融公墓客户信息绑定</van-tag>
+	</div>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+    <div class="van-cell-group van-hairline--top-bottom">
+		<div class="van-cell van-cell--center van-field">
+			<div class="van-cell__title van-field__label"><span>身份证</span></div>
+			<div class="van-cell__value">
+				<div class="van-field__body"><input v-model="customerNo" type="text" placeholder="请输入身份证号" class="van-field__control">
+				</div>
+			</div>
+			<br>
+		</div>
+	</div>
+	<br>
+	<div class="van-cell-group van-hairline--top-bottom">
+		<div class="van-cell van-cell--center van-field">
+			<div class="van-cell__title van-field__label"><span>手机号</span></div>
+			<div class="van-cell__value">
+				<div class="van-field__body"><input v-model="mobile" type="text" placeholder="请输入绑定手机号码" class="van-field__control">
+					<div class="van-field__button">
+						<button v-if="this.textval==1" class="van-button plain van-button--primary van-button--small" @click="getVerificationcode()"><span id="yzmtext" class="van-button__text">
+				获取验证码
+			  </span></button>
+						<div v-if="this.textval==0" ><van-button disabled type="primary" size="small">{{ content }}</van-button></div>
+					</div>
+				</div>
+			</div>
+			<br>
+		</div>
+	</div>
+	<br>
+
+	<div class="van-cell-group van-hairline--top-bottom">
+		<div class="van-cell van-cell--center van-field">
+			<div class="van-cell__title van-field__label"><span>验证码</span></div>
+			<div class="van-cell__value">
+				<div class="van-field__body"><input v-model="captcha" type="text" placeholder="请输入获取的验证码" class="van-field__control">
+				</div>
+			</div>
+			<br>
+		</div>
+	</div>
+
+	<br>
+	<br>
+	<br>
+	<button class="van-button plain  van-button--info van-button--large" @click="bunding()"><span class="van-button__text">
+		绑定
+	  </span></button>
+	</div>
+		
+	
+</div>
+
+</body>
+<!--<script>
+        var ua = navigator.userAgent.toLowerCase();
+        var isWeixin = ua.indexOf('micromessenger') != -1;
+        if (!isWeixin) {
+            window.location.href = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=888"
+        }
+</script>-->
+
+<script>
+  var Vue = window.Vue;
+  var vant = window.vant;
+  var axios = window.axios;
+
+
+  // 注册组件
+  Vue.use(vant);
+  vant.Toast('客户信息绑定');
+  new Vue({
+    el: '#app',
+    data(){
+      return {
+          openId:'',
+		  mobile:'',
+		  customerNo:'',
+		  captcha:'',
+		  textval:1,
+		  timer:null,
+		  count :60,
+		  content:'',
+		  bundingStatus:'',
+      }
+    },
+    watch: {
+      
+    },
+    methods: {
+		bunding(){
+			if(this.customerNo==''){
+				alert('请输入身份证号');
+				return;
+			}
+			if(!this.checkIDCard(this.customerNo)){
+				alert('请输入正确的身份证号码！')
+				return;
+			}
+			if(this.isMobile(this.mobile)==false){
+				alert('手机号输入有误');
+				return;
+			}
+			if(this.captcha==null && this.captcha==''){
+				alert('验证码为空');
+				return;
+			}
+			var data = {"customerNo":this.customerNo,"openId":this.openId,"mobile":this.mobile,"captcha":this.captcha};
+			axios.post("http://betimes.free.idcfengye.com/blade-cemetery/cemetery/bunding",data).then(response=>{
+				console.log(JSON.stringify(response));
+				if(response.data.success!=false){
+					alert('绑定客户信息成功')
+				}else{
+					alert(response.data.message)
+				}
+			})
+		},
+		getVerificationcode(){
+			var mobile = this.mobile;
+			var data = {"mobile":this.mobile,"smsmode":"2"}
+			var self_=this;
+			if(this.isMobile(mobile)==true){
+				axios.post("http://betimes.free.idcfengye.com/blade-cemetery/cemetery/sms",data).then(function(response){
+					if(response.data.success==true){
+						self_.textval = 0;
+						const TIME_COUNT = 60;
+						self_.count = TIME_COUNT;
+						self_.timer = window.setInterval(() => {
+							if(self_.count > 0 && self_.count <= TIME_COUNT){
+								self_.count--;
+								// 更新按钮的文字内容
+								self_.content = self_.count + 's后重新获取';
+							}else{
+								self_.textval = 1;
+								clearInterval(self_.timer);
+								self_.timer = null;
+								return;
+							}
+						},1000)
+					}else{
+						alert('请不要重复获取')
+					}
+				})
+			}else{
+				alert("请输入正确的手机号")
+			}	
+		},
+		//检验是否是手机号
+		isMobile(s) {
+			var patrn = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
+			if (!patrn.exec(s))
+				return false;
+			return true;
+		},
+		checkIDCard(idcode){
+			// 加权因子
+			var weight_factor = [7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2];
+			// 校验码
+			var check_code = ['1', '0', 'X' , '9', '8', '7', '6', '5', '4', '3', '2'];
+		 
+			var code = idcode + "";
+			var last = idcode[17];//最后一个
+		 
+			var seventeen = code.substring(0,17);
+		 
+			// ISO 7064:1983.MOD 11-2
+			// 判断最后一位校验码是否正确
+			var arr = seventeen.split("");
+			var len = arr.length;
+			var num = 0;
+			for(var i = 0; i < len; i++){
+				num = num + arr[i] * weight_factor[i];
+			}
+			
+			// 获取余数
+			var resisue = num%11;
+			var last_no = check_code[resisue];
+		 
+			// 格式的正则
+			// 正则思路
+			/*
+			第一位不可能是0
+			第二位到第六位可以是0-9
+			第七位到第十位是年份，所以七八位为19或者20
+			十一位和十二位是月份，这两位是01-12之间的数值
+			十三位和十四位是日期，是从01-31之间的数值
+			十五，十六，十七都是数字0-9
+			十八位可能是数字0-9，也可能是X
+			*/
+			var idcard_patter = /^[1-9][0-9]{5}([1][9][0-9]{2}|[2][0][0|1][0-9])([0][1-9]|[1][0|1|2])([0][1-9]|[1|2][0-9]|[3][0|1])[0-9]{3}([0-9]|[X])$/;
+		 
+			// 判断格式是否正确
+			var format = idcard_patter.test(idcode);
+		 
+			// 返回验证结果，校验码和格式同时正确才算是合法的身份证号码
+			return last === last_no && format ? true : false;
+		},
+		//获取url的参数
+		getUrlParms(para) {
+			var search = location.search; //页面URL的查询部分字符串
+			var arrPara = new Array(); //参数数组。数组单项为包含参数名和参数值的字符串，如“para=value”
+			var arrVal = new Array(); //参数值数组。用于存储查找到的参数值
+
+			if (search != "") {
+				var index = 0;
+				search = search.substr(1); //去除开头的“?”
+				arrPara = search.split("&");
+
+				for (i in arrPara) {
+					var paraPre = para + "="; //参数前缀。即参数名+“=”，如“para=”
+					if (arrPara[i].indexOf(paraPre) == 0 && paraPre.length < arrPara[i].length) {
+						arrVal[index] = decodeURI(arrPara[i].substr(paraPre.length)); //顺带URI解码避免出现乱码
+						index++;
+					}
+				}
+			}
+
+			if (arrVal.length == 1) {
+				return arrVal[0];
+			} else if (arrVal.length == 0) {
+				return null;
+			} else {
+				return arrVal;
+			}
+		},
+		getOpenId(url){
+			//先看url上面是否有openId
+			var openId = this.getUrlParms('openId');
+			if(openId == null ){
+				openId = Cookies.get('openId');
+				//alert('从cookie中拿openId');
+				//alert(openId);
+			}else{
+				//范进cookie
+				Cookies.set('openId',openId);
+			}
+			//typeof(openId)=='undefined'&&
+			if(openId == null){
+				var reUrl = window.location.href;
+				//alert(reUrl);
+				//alert("开始授权")
+				window.location.href = url+'?reUrl='+reUrl;
+			}else{
+				return openId;
+			}
+		}
+    },
+    mounted: function() {
+		//获取openId
+		this.openId = this.getOpenId('http://betimes.free.idcfengye.com/blade-mp/ouath2/ouath');
+		
+    }
+
+  });
+  
+
+</script>
+
+</html>
